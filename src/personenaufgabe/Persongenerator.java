@@ -1,5 +1,8 @@
 package personenaufgabe;
 
+import com.sun.deploy.util.StringUtils;
+
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -9,10 +12,12 @@ public class Persongenerator {
     private final long amountOfPersonsToGenerate = 5000000; //5 million
 
 
-    private HashMap<Integer, String> firstNamesReferencedByRank;
-    private HashMap<Integer, String> lastNamesReferencedByRank;
-    private HashMap<Integer, Long> zipCodeWithNumberOfInhabitants;
-    private ArrayList<String> streetNames;
+    private HashMap<String, Integer> firstNamesReferencedByRank = new HashMap<>();
+    private HashMap<String, Integer> lastNamesReferencedByRank = new HashMap<>();
+    private HashMap<Integer, Long> zipCodeWithNumberOfInhabitants = new HashMap<>();
+    private HashMap<Integer, String> zipCodeCityName = new HashMap<>();
+
+    private ArrayList<String> streetNames = new ArrayList<>();
     private final int maximumHouseNumber = 500;
 
     private Connection conn1 = null;
@@ -24,7 +29,7 @@ public class Persongenerator {
     /**
      * Connects do database via jdbc
      */
-    private void connect() {
+    private Connection connect() {
         try {
             Class.forName("oracle.jdbc.driver.OracleDriver");
         }
@@ -40,8 +45,11 @@ public class Persongenerator {
         }
         if (conn1 != null) {
             System.out.println("Connection successful");
+            return conn1;
         }
+        return null;
     }
+
 
 
     /**
@@ -161,7 +169,63 @@ public class Persongenerator {
         long startTime = System.currentTimeMillis();
 
         Persongenerator p = new Persongenerator();
-        p.connect();
+        Connection c = p.connect();
+
+
+        try {
+
+            PreparedStatement ps = c.prepareStatement("SELECT rang, name FROM para_db.vornamen");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                p.firstNamesReferencedByRank.put(rs.getString("name"), rs.getInt("rang"));
+            }
+            System.out.println(p.firstNamesReferencedByRank);
+            ps.close();
+
+            /*ps = c.prepareStatement("SELECT rang, name FROM para_db.nachnamen");
+            ResultSet rs2 = ps.executeQuery();
+            while (rs2.next()) {
+                p.lastNamesReferencedByRank.put(rs2.getString("name"), Integer.parseInt((rs2.getString("rang")).substring(0, rs2.getString("rang").length()-1).replaceAll("\\s", "")));
+            }
+            System.out.println(p.lastNamesReferencedByRank);
+            ps.close();
+
+            ps = c.prepareStatement("SELECT name FROM para_db.strassen_namen");
+            ResultSet rs3 = ps.executeQuery();
+            while (rs3.next()) {
+                p.streetNames.add(rs3.getString("name"));
+            }
+            System.out.println(p.streetNames);
+            ps.close();
+
+
+
+            ps = c.prepareStatement("SELECT para_db.plzew.plz, para_db.plzew.einwohner, para_db.plzort.ort FROM para_db.plzew " +
+                    "FULL JOIN para_db.plzort ON para_db.plzew.plz=para_db.plzort.plz");
+            ResultSet rs4 = ps.executeQuery();
+            while (rs4.next()) {
+                p.zipCodeWithNumberOfInhabitants.put(rs4.getInt("plz"), rs4.getLong("einwohner"));
+                p.zipCodeCityName.put(rs4.getInt("plz"), rs4.getString("ort"));
+            }
+            System.out.println(p.zipCodeCityName);
+            ps.close();
+            */
+        } catch (SQLException se){
+            se.printStackTrace();
+        }
+
+        ArrayList<String> firstnames = p.createNameList(50000, p.firstNamesReferencedByRank);
+       /* ArrayList<String> lastnames = p.createNameList(50000, p.lastNamesReferencedByRank);
+        ArrayList<Integer> zipCodeList = p.createZipCodeList(50000, p.zipCodeWithNumberOfInhabitants);
+        ArrayList<String> streetNameList = p.createStreetNameList(50000, p.streetNames);
+        ArrayList<String> cityNames = new ArrayList<>();
+
+        for (int zipcode: zipCodeList) {
+            cityNames.add(p.zipCodeCityName.get(zipcode));
+        }
+    */
+        double timeElapsed = (System.currentTimeMillis()-startTime)/1000;
+        System.out.println("Die Operation hat "+ timeElapsed+ " Sekunden gebraucht");
     }
 
 }
