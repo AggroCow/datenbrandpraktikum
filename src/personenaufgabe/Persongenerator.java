@@ -112,7 +112,8 @@ public class Persongenerator {
 
 
     public static void main(String[] args) {
-
+        Persongenerator p = new Persongenerator();
+        p.connect();
     }
 
 }
