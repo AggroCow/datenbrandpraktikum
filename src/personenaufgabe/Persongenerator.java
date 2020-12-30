@@ -177,13 +177,13 @@ public class Persongenerator {
      * @param maximumHouseNumber
      * @return the aforementioned List
      */
-    private ArrayList<Integer> createHouseNumberList(int amountOfHouseNumbersToGenerate, int maximumHouseNumber){
+    private Integer[] createHouseNumberList(int amountOfHouseNumbersToGenerate, int maximumHouseNumber){
 
         Integer[] houseNumbers = new Integer[amountOfHouseNumbersToGenerate];
         int currentHouseNumber = 1;
 
         for(int i = 0; i < amountOfHouseNumbersToGenerate; i++){
-            houseNumbers.add(currentHouseNumber);
+            houseNumbers[i] = currentHouseNumber;
             if(currentHouseNumber != maximumHouseNumber) {
                 currentHouseNumber++;
             } else {
