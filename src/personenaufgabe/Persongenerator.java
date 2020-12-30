@@ -147,6 +147,7 @@ public class Persongenerator {
             
             if(cursorForAddedStreetnames < streetNameList.length){
                 streetNameList[cursorForAddedStreetnames] = (streetNames.get(cursorForProvidedStreetNames));
+                cursorForAddedStreetnames++;
             } else {
                 break;
             }
@@ -284,6 +285,7 @@ public class Persongenerator {
 
         for (int zipcode: zipCodeList) {
             cityNames.add(p.zipCodeCityName.get(zipcode));
+            System.out.println(zipcode);
         }
 
         try{
