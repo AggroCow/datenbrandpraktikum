@@ -1,12 +1,9 @@
 package personenaufgabe;
 
-import com.sun.deploy.util.StringUtils;
-
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.sql.Date;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Persongenerator {
     private final long amountOfPersonsToGenerate = 5000000; //5 million
@@ -60,22 +57,37 @@ public class Persongenerator {
      * @param namesReferencedByRank provides names which are referenced by a rank, i.e. their key
      * @return the aforementioned list
      */
-    private ArrayList<String> createNameList(int amountOfNamesToGenerate, HashMap<String, Integer> namesReferencedByRank) {
-        ArrayList<String> nameList = null;
+    private String[] createNameList(int amountOfNamesToGenerate, HashMap<String, Integer> namesReferencedByRank) {
+        String[] nameArray = new String[amountOfNamesToGenerate];
 
         int sumOfAllRanks = (namesReferencedByRank.size() * (namesReferencedByRank.size() +1))/2; //triangle number
-        double factorByHowMuchANameHasToBeMultiplied = amountOfNamesToGenerate / sumOfAllRanks;
+        double factorByHowMuchANameHasToBeMultiplied = (double)amountOfNamesToGenerate / (double)sumOfAllRanks;
 
+
+        double finalFactorByHowMuchANameHasToBeMultiplied = factorByHowMuchANameHasToBeMultiplied;
+
+
+        final int[] cursor = {0};
+        
         namesReferencedByRank.forEach((name, rank) -> {
-            int nameOccurence = (int) Math.round((namesReferencedByRank.size()-rank+1)*factorByHowMuchANameHasToBeMultiplied);
+            int nameOccurence = (int) Math.round((namesReferencedByRank.size()-rank+1)* finalFactorByHowMuchANameHasToBeMultiplied);
             for (int i = 0; i < nameOccurence; i++) {
-                nameList.add(name);
+                if(cursor[0] < (nameArray).length){
+                    nameArray[cursor[0]] = name;
+                    cursor[0]++;
+                } else {
+                    return;
+                }
             }
         });
 
-        Collections.shuffle(nameList);
+        List<String> nameListAsList = Arrays.asList(nameArray);
+        
+        Collections.shuffle(nameListAsList);
+        
+        nameListAsList.toArray(nameArray);
 
-        return nameList;
+        return nameArray;
     }
 
     /**
@@ -85,8 +97,8 @@ public class Persongenerator {
      * @param zipCodeWithNumberOfInhabitants
      * @return aforementioned list
      */
-    private ArrayList<Integer> createZipCodeList(int amountOfZipcodesToGenerate, HashMap<Integer, Long> zipCodeWithNumberOfInhabitants) {
-        ArrayList<Integer> zipCodeList = null;
+    private Integer[] createZipCodeList(int amountOfZipcodesToGenerate, HashMap<Integer, Long> zipCodeWithNumberOfInhabitants) {
+        Integer[] zipCodeList = new Integer[amountOfZipcodesToGenerate];
 
         long amountOfAllInhabitants = 0;
 
@@ -95,15 +107,26 @@ public class Persongenerator {
         }
 
         long finalAmountOfAllInhabitants = amountOfAllInhabitants;
-        zipCodeWithNumberOfInhabitants.forEach((zipCode, inhabitantCount) ->{
-            double zipCodeOccurenceInPercent = finalAmountOfAllInhabitants / inhabitantCount;
 
-            for (int i = 0; i < Math.round(amountOfZipcodesToGenerate*zipCodeOccurenceInPercent); i++) {
-                zipCodeList.add(zipCode);
+        final int[] cursor = {0};
+        zipCodeWithNumberOfInhabitants.forEach((zipCode, inhabitantCount) ->{
+            double zipCodeOccurrenceInPercent = (double)finalAmountOfAllInhabitants / (double) inhabitantCount;
+
+            for (int i = 0; i < Math.round(amountOfZipcodesToGenerate*zipCodeOccurrenceInPercent); i++) {
+                if(cursor[0] < zipCodeList.length){
+                    zipCodeList[cursor[0]] = zipCode;
+                    cursor[0]++;
+                } else {
+                    return;
+                }
             }
         });
 
-        Collections.shuffle(zipCodeList);
+        List<Integer> zipCodeListAsList = Arrays.asList(zipCodeList);
+
+        Collections.shuffle(zipCodeListAsList);
+
+        zipCodeListAsList.toArray(zipCodeList);
 
         return zipCodeList;
     }
@@ -115,21 +138,34 @@ public class Persongenerator {
      * @param streetNames
      * @return the aforementioned list
      */
-    private ArrayList<String> createStreetNameList(int amountOfNamesToGenerate, ArrayList<String> streetNames) {
-        ArrayList<String> streetNameList = null;
-        int cursor = 0;
+    private String[] createStreetNameList(int amountOfNamesToGenerate, ArrayList<String> streetNames) {
+        String[] streetNameList = new String[amountOfNamesToGenerate];
+        int cursorForProvidedStreetNames = 0;
+        int cursorForAddedStreetnames = 0;
 
         for (int i = 0; i < amountOfNamesToGenerate; i++) {
-            streetNameList.add(streetNames.get(cursor));
-            if(cursor == streetNames.size()){
-                cursor = 0;
+            
+            if(cursorForAddedStreetnames < streetNameList.length){
+                streetNameList[cursorForAddedStreetnames] = (streetNames.get(cursorForProvidedStreetNames));
             } else {
-                cursor++;
+                break;
+            }
+            
+            if(cursorForProvidedStreetNames == streetNames.size()){
+                cursorForProvidedStreetNames = 0;
+            } else {
+                cursorForProvidedStreetNames++;
             }
 
         }
 
-        Collections.shuffle(streetNameList);
+        List<String> streetNameListAsList = Arrays.asList(streetNameList);
+
+        Collections.shuffle(streetNameListAsList);
+
+        streetNameListAsList.toArray(streetNameList);
+        
+        
         return streetNameList;
     }
 
@@ -143,7 +179,7 @@ public class Persongenerator {
      */
     private ArrayList<Integer> createHouseNumberList(int amountOfHouseNumbersToGenerate, int maximumHouseNumber){
 
-        ArrayList<Integer> houseNumbers = null;
+        Integer[] houseNumbers = new Integer[amountOfHouseNumbersToGenerate];
         int currentHouseNumber = 1;
 
         for(int i = 0; i < amountOfHouseNumbersToGenerate; i++){
@@ -155,9 +191,32 @@ public class Persongenerator {
             }
         }
 
-        Collections.shuffle(houseNumbers);
+        List<Integer> houseNumberList = Arrays.asList(houseNumbers);
+
+        Collections.shuffle(houseNumberList);
+
+        houseNumberList.toArray(houseNumbers);
 
         return houseNumbers;
+    }
+
+
+    /**
+     *  Generates a list of length {@param amountOfDatesToGenerate} of Random dates between the start of year 1935 and 2020.
+     * @param amountOfDatesToGenerate
+     * @return the before mentioned list
+     */
+    private java.sql.Date[] createRandomDates(int amountOfDatesToGenerate) {
+        java.sql.Date[] randomDates = new Date[amountOfDatesToGenerate];
+        long startTime = Timestamp.valueOf("1935-01-01 00:00:00").getTime();
+        long endTime = Timestamp.valueOf("2020-12-31 00:58:00").getTime();
+        long timeDifference = endTime - startTime + 1;
+
+        for (int i = 0; i < amountOfDatesToGenerate; i++) {
+            randomDates[i] = (new Date(startTime + (long) (Math.random() * timeDifference)));
+        }
+
+        return randomDates;
     }
 
 
@@ -165,13 +224,15 @@ public class Persongenerator {
 
 
 
+    @SuppressWarnings("SqlResolve")
     public static void main(String[] args) {
-        long startTime = System.currentTimeMillis();
+        double startTime = System.currentTimeMillis();
+
 
         Persongenerator p = new Persongenerator();
         Connection c = p.connect();
 
-
+        //Acquire Data from DB
         try {
 
             PreparedStatement ps = c.prepareStatement("SELECT rang, name FROM para_db.vornamen");
@@ -182,7 +243,7 @@ public class Persongenerator {
             System.out.println(p.firstNamesReferencedByRank);
             ps.close();
 
-            /*ps = c.prepareStatement("SELECT rang, name FROM para_db.nachnamen");
+            ps = c.prepareStatement("SELECT rang, name FROM para_db.nachnamen");
             ResultSet rs2 = ps.executeQuery();
             while (rs2.next()) {
                 p.lastNamesReferencedByRank.put(rs2.getString("name"), Integer.parseInt((rs2.getString("rang")).substring(0, rs2.getString("rang").length()-1).replaceAll("\\s", "")));
@@ -198,8 +259,6 @@ public class Persongenerator {
             System.out.println(p.streetNames);
             ps.close();
 
-
-
             ps = c.prepareStatement("SELECT para_db.plzew.plz, para_db.plzew.einwohner, para_db.plzort.ort FROM para_db.plzew " +
                     "FULL JOIN para_db.plzort ON para_db.plzew.plz=para_db.plzort.plz");
             ResultSet rs4 = ps.executeQuery();
@@ -209,21 +268,63 @@ public class Persongenerator {
             }
             System.out.println(p.zipCodeCityName);
             ps.close();
-            */
+
         } catch (SQLException se){
             se.printStackTrace();
         }
 
-        ArrayList<String> firstnames = p.createNameList(50000, p.firstNamesReferencedByRank);
-       /* ArrayList<String> lastnames = p.createNameList(50000, p.lastNamesReferencedByRank);
-        ArrayList<Integer> zipCodeList = p.createZipCodeList(50000, p.zipCodeWithNumberOfInhabitants);
-        ArrayList<String> streetNameList = p.createStreetNameList(50000, p.streetNames);
+        int currentAmountOfPersonsToGenerate = 50000;
+        String[] firstnames = p.createNameList(currentAmountOfPersonsToGenerate, p.firstNamesReferencedByRank);
+        String[] lastnames = p.createNameList(currentAmountOfPersonsToGenerate, p.lastNamesReferencedByRank);
+        Integer[] zipCodeList = p.createZipCodeList(currentAmountOfPersonsToGenerate, p.zipCodeWithNumberOfInhabitants);
+        String[] streetNameList = p.createStreetNameList(currentAmountOfPersonsToGenerate, p.streetNames);
+        Date[] randomDates = p.createRandomDates(currentAmountOfPersonsToGenerate);
+        Integer[] randomHouseNumbers = p.createHouseNumberList(currentAmountOfPersonsToGenerate, 300);
         ArrayList<String> cityNames = new ArrayList<>();
 
         for (int zipcode: zipCodeList) {
             cityNames.add(p.zipCodeCityName.get(zipcode));
         }
-    */
+
+        try{
+
+            //SQL statement add first
+            PreparedStatement ps = c.prepareStatement("INSERT INTO para_db.jdbc_personen VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+
+            for (int i = 0; i < firstnames.length; i++) {
+
+                ps.setString(1, firstnames[i]);
+                ps.setString(2, lastnames[i]);
+                ps.setString(3, String.valueOf(randomDates[i]));
+                ps.setString(4, cityNames.get(i));
+                if(i < (firstnames.length*0.95)) {
+                    ps.setString(5, cityNames.get(i));
+                } else{
+                    ps.setString(5, cityNames.get((int) (Math.random() * firstnames.length)));
+                }
+                ps.setString(6, "added via JDBC");
+                ps.setString(7, streetNameList[i]);
+                ps.setString(8, String.valueOf(randomHouseNumbers[i]));
+                ps.addBatch();
+            }
+            int[] count = ps.executeBatch();
+            System.out.println(count);
+            c.commit();
+
+        }catch(SQLException se) {
+            se.printStackTrace();
+        }
+        /*
+        1. VORNAME      VARCHAR2(30),
+        2. NACHNAME     VARCHAR2(255),
+        3. GEBURTSDATUM DATE,
+        4. GEBURTSORT   NUMBER,
+        5. WOHNORT      NUMBER,
+        6. BEMERKUNG    VARCHAR2(35),
+        7. STRASSE      VARCHAR2(128),
+        8. HAUSNUMMER   NUMBER
+        */
+
         double timeElapsed = (System.currentTimeMillis()-startTime)/1000;
         System.out.println("Die Operation hat "+ timeElapsed+ " Sekunden gebraucht");
     }
