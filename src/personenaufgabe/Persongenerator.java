@@ -297,7 +297,7 @@ public class Persongenerator {
 
                 ps.setString(1, firstnames[i]);
                 ps.setString(2, lastnames[i]);
-                ps.setString(3, String.valueOf(randomDates[i]));
+                ps.setDate(3, randomDates[i]);
                 ps.setString(4, cityNames.get(i));
                 if(i < (firstnames.length*0.95)) {
                     ps.setString(5, cityNames.get(i));
@@ -306,12 +306,12 @@ public class Persongenerator {
                 }
                 ps.setString(6, "added via JDBC");
                 ps.setString(7, streetNameList[i]);
-                ps.setString(8, String.valueOf(randomHouseNumbers[i]));
+                ps.setInt(8, randomHouseNumbers[i]);
                 ps.addBatch();
             }
             int[] count = ps.executeBatch();
             System.out.println(count);
-            c.commit();
+            //c.commit();
 
         }catch(SQLException se) {
             se.printStackTrace();
