@@ -97,7 +97,7 @@ public class Persongenerator {
      * @param zipCodeWithNumberOfInhabitants
      * @return aforementioned list
      */
-    private Integer[] createZipCodeList(int amountOfZipcodesToGenerate, HashMap<Integer, Integer> zipCodeWithNumberOfInhabitants) {
+    public Integer[] createZipCodeList(int amountOfZipcodesToGenerate, HashMap<Integer, Integer> zipCodeWithNumberOfInhabitants) {
 
         Integer[] zipCodeArray = new Integer[amountOfZipcodesToGenerate];
 
@@ -306,21 +306,36 @@ public class Persongenerator {
             for (int i = 0; i < firstnames.length; i++) {
 
                 ps.setString(1, firstnames[i]);
+                System.out.print(firstnames[i] + ", ");
+
                 ps.setString(2, lastnames[i]);
+                System.out.print(lastnames[i] + ", ");
+
                 ps.setDate(3, randomDates[i]);
+                System.out.print(randomDates[i] + ", ");
+
                 ps.setString(4, cityNames.get(i));
+                System.out.print(cityNames.get(i) + ", ");
+
                 if(i < (firstnames.length*0.95)) {
                     ps.setString(5, cityNames.get(i));
+                    System.out.print(cityNames.get(i) + ", ");
                 } else{
                     ps.setString(5, cityNames.get((int) (Math.random() * firstnames.length)));
+                    System.out.print(cityNames.get(i) + ", ");
                 }
                 ps.setString(6, "added via JDBC");
+                System.out.print("added via JDBC" + ", ");
+
                 ps.setString(7, streetNameList[i]);
+                System.out.print(streetNameList[i] + ", ");
+
                 ps.setInt(8, randomHouseNumbers[i]);
+                System.out.println(randomHouseNumbers[i]);
                 ps.addBatch();
             }
-            int[] count = ps.executeBatch();
-            System.out.println(count);
+            //int[] count = ps.executeBatch();
+            //System.out.println(count);
             //c.commit();
 
         }catch(SQLException se) {
