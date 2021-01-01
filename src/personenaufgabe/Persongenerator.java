@@ -11,7 +11,7 @@ public class Persongenerator {
 
     private HashMap<String, Integer> firstNamesReferencedByRank = new HashMap<>();
     private HashMap<String, Integer> lastNamesReferencedByRank = new HashMap<>();
-    private HashMap<Integer, Long> zipCodeWithNumberOfInhabitants = new HashMap<>();
+    private HashMap<Integer, Integer> zipCodeWithNumberOfInhabitants = new HashMap<>();
     private HashMap<Integer, String> zipCodeCityName = new HashMap<>();
 
     private ArrayList<String> streetNames = new ArrayList<>();
@@ -97,38 +97,49 @@ public class Persongenerator {
      * @param zipCodeWithNumberOfInhabitants
      * @return aforementioned list
      */
-    private Integer[] createZipCodeList(int amountOfZipcodesToGenerate, HashMap<Integer, Long> zipCodeWithNumberOfInhabitants) {
-        Integer[] zipCodeList = new Integer[amountOfZipcodesToGenerate];
+    private Integer[] createZipCodeList(int amountOfZipcodesToGenerate, HashMap<Integer, Integer> zipCodeWithNumberOfInhabitants) {
 
-        long amountOfAllInhabitants = 0;
+        Integer[] zipCodeArray = new Integer[amountOfZipcodesToGenerate];
 
-        for(long count: zipCodeWithNumberOfInhabitants.values()){
-            amountOfAllInhabitants += count;
-        }
+        HashMap<Integer, Integer> zipCodesWithAmountOfOccurrences = new HashMap<>();
 
-        long finalAmountOfAllInhabitants = amountOfAllInhabitants;
+        final double amountOfAllInhabitants = zipCodeWithNumberOfInhabitants.values().stream().reduce(0, Integer::sum);
 
-        final int[] cursor = {0};
+
         zipCodeWithNumberOfInhabitants.forEach((zipCode, inhabitantCount) ->{
-            double zipCodeOccurrenceInPercent = (double)finalAmountOfAllInhabitants / (double) inhabitantCount;
-
-            for (int i = 0; i < Math.round(amountOfZipcodesToGenerate*zipCodeOccurrenceInPercent); i++) {
-                if(cursor[0] < zipCodeList.length){
-                    zipCodeList[cursor[0]] = zipCode;
-                    cursor[0]++;
-                } else {
-                    return;
-                }
-            }
+            double zipCodeOccurrenceInPercent = amountOfAllInhabitants / (double) inhabitantCount;
+            zipCodesWithAmountOfOccurrences.put(zipCode, (int) (amountOfZipcodesToGenerate*zipCodeOccurrenceInPercent));
         });
 
-        List<Integer> zipCodeListAsList = Arrays.asList(zipCodeList);
+        int currentZipCodeHasToPutThisManyTimesInArray = 0;
+        int currentZipCode = 0;
+        List<Integer> listOfZipCodes = new ArrayList<>(zipCodesWithAmountOfOccurrences.keySet());
 
-        Collections.shuffle(zipCodeListAsList);
 
-        zipCodeListAsList.toArray(zipCodeList);
+        for (int i = 0; i < zipCodeArray.length; i++) {
 
-        return zipCodeList;
+            if(currentZipCodeHasToPutThisManyTimesInArray == 0){
+                currentZipCodeHasToPutThisManyTimesInArray = zipCodesWithAmountOfOccurrences.get(listOfZipCodes.get(0));
+                currentZipCode = listOfZipCodes.get(0);
+                listOfZipCodes.remove(0);
+            }
+
+            zipCodeArray[i] = currentZipCode;
+
+
+            currentZipCodeHasToPutThisManyTimesInArray--;
+
+        }
+
+
+
+        List<Integer> zipCodeList = Arrays.asList(zipCodeArray);
+
+        Collections.shuffle(zipCodeList);
+
+        zipCodeList.toArray(zipCodeArray);
+
+        return zipCodeArray;
     }
 
 
@@ -264,7 +275,7 @@ public class Persongenerator {
                     "FULL JOIN para_db.plzort ON para_db.plzew.plz=para_db.plzort.plz");
             ResultSet rs4 = ps.executeQuery();
             while (rs4.next()) {
-                p.zipCodeWithNumberOfInhabitants.put(rs4.getInt("plz"), rs4.getLong("einwohner"));
+                p.zipCodeWithNumberOfInhabitants.put(rs4.getInt("plz"), rs4.getInt("einwohner"));
                 p.zipCodeCityName.put(rs4.getInt("plz"), rs4.getString("ort"));
             }
             System.out.println(p.zipCodeCityName);
