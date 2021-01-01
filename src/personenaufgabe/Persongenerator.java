@@ -155,7 +155,6 @@ public class Persongenerator {
         int cursorForAddedStreetnames = 0;
 
         for (int i = 0; i < amountOfNamesToGenerate; i++) {
-            
             if(cursorForAddedStreetnames < streetNameList.length){
                 streetNameList[cursorForAddedStreetnames] = (streetNames.get(cursorForProvidedStreetNames));
                 cursorForAddedStreetnames++;
