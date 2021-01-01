@@ -158,7 +158,10 @@ public class Persongenerator {
 
             zipCodeArray[i] = currentZipCode;
 
-
+            if(currentZipCodeHasToPutThisManyTimesInArray > highestPopulationInZipCode){
+                highestPopulatedZipCode = currentZipCode;
+                highestPopulationInZipCode = currentZipCodeHasToPutThisManyTimesInArray;
+            }
             currentZipCodeHasToPutThisManyTimesInArray--;
 
         }
