@@ -3,10 +3,10 @@ package personenaufgabe;
 import java.sql.*;
 import java.sql.Date;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Persongenerator {
-    private final long amountOfPersonsToGenerate = 5000000; //5 million
+    private final int amountOfPersonsToGenerate = 5000000; //5 million
 
 
     private HashMap<String, Integer> firstNamesReferencedByRank = new HashMap<>();
@@ -66,20 +66,43 @@ public class Persongenerator {
 
         double finalFactorByHowMuchANameHasToBeMultiplied = factorByHowMuchANameHasToBeMultiplied;
 
-
         final int[] cursor = {0};
-        
+
+        HashMap<String, Integer> namesAndOccurences = new HashMap<>();
+        List<String> listOfNames = new ArrayList<>(namesReferencedByRank.keySet());
+        AtomicReference<String> nameNumberOne = new AtomicReference<>("");
+
+
+
         namesReferencedByRank.forEach((name, rank) -> {
-            int nameOccurence = (int) Math.round((namesReferencedByRank.size()-rank+1)* finalFactorByHowMuchANameHasToBeMultiplied);
-            for (int i = 0; i < nameOccurence; i++) {
-                if(cursor[0] < (nameArray).length){
-                    nameArray[cursor[0]] = name;
-                    cursor[0]++;
-                } else {
-                    return;
-                }
+            namesAndOccurences.put(name, (int) Math.round((namesReferencedByRank.size()-rank+1)* finalFactorByHowMuchANameHasToBeMultiplied));
+            if(rank == 1){
+                nameNumberOne.set(name);
             }
         });
+
+        int currentNameHasToBePutThisManyTimesInArray = 0;
+        String currentName = "";
+
+        for (int i = 0; i < nameArray.length; i++) {
+            if(listOfNames.size() == 0) {
+                while(i < nameArray.length){
+                    nameArray[i] = nameNumberOne.get();
+                    i++;
+                }
+                break;
+            }
+            while (currentNameHasToBePutThisManyTimesInArray <= 0) {
+                currentNameHasToBePutThisManyTimesInArray = namesAndOccurences.get(listOfNames.get(0));
+                currentName = listOfNames.get(0);
+                listOfNames.remove(0);
+            }
+
+            nameArray[i] = currentName;
+            currentNameHasToBePutThisManyTimesInArray--;
+
+        }
+
 
         List<String> nameListAsList = Arrays.asList(nameArray);
         
@@ -107,18 +130,27 @@ public class Persongenerator {
 
 
         zipCodeWithNumberOfInhabitants.forEach((zipCode, inhabitantCount) ->{
-            double zipCodeOccurrenceInPercent = amountOfAllInhabitants / (double) inhabitantCount;
-            zipCodesWithAmountOfOccurrences.put(zipCode, (int) (amountOfZipcodesToGenerate*zipCodeOccurrenceInPercent));
+            double zipCodeOccurrenceInPercent = (double) inhabitantCount / amountOfAllInhabitants;
+            zipCodesWithAmountOfOccurrences.put(zipCode,  (int) Math.round(amountOfZipcodesToGenerate*zipCodeOccurrenceInPercent));
         });
 
         int currentZipCodeHasToPutThisManyTimesInArray = 0;
         int currentZipCode = 0;
-        List<Integer> listOfZipCodes = new ArrayList<>(zipCodesWithAmountOfOccurrences.keySet());
+        List<Integer> listOfZipCodes = new ArrayList<>(zipCodeWithNumberOfInhabitants.keySet());
 
+
+        int highestPopulatedZipCode = 0;
+        int highestPopulationInZipCode = 0;
 
         for (int i = 0; i < zipCodeArray.length; i++) {
-
-            if(currentZipCodeHasToPutThisManyTimesInArray == 0){
+            if(listOfZipCodes.size() == 0) {
+                while(i < zipCodeArray.length){
+                    zipCodeArray[i] = highestPopulatedZipCode;
+                    i++;
+                }
+                break;
+            }
+            while (currentZipCodeHasToPutThisManyTimesInArray <= 0) {
                 currentZipCodeHasToPutThisManyTimesInArray = zipCodesWithAmountOfOccurrences.get(listOfZipCodes.get(0));
                 currentZipCode = listOfZipCodes.get(0);
                 listOfZipCodes.remove(0);
@@ -131,9 +163,11 @@ public class Persongenerator {
 
         }
 
-
-
         List<Integer> zipCodeList = Arrays.asList(zipCodeArray);
+
+        if (zipCodeList.size() != amountOfZipcodesToGenerate){
+            System.out.println("ZU WENIGE ZIPCODES IN ZIPCODELISTE");
+        }
 
         Collections.shuffle(zipCodeList);
 
@@ -150,19 +184,13 @@ public class Persongenerator {
      * @return the aforementioned list
      */
     private String[] createStreetNameList(int amountOfNamesToGenerate, ArrayList<String> streetNames) {
-        String[] streetNameList = new String[amountOfNamesToGenerate];
+        String[] streetNameArray = new String[amountOfNamesToGenerate];
         int cursorForProvidedStreetNames = 0;
-        int cursorForAddedStreetnames = 0;
 
-        for (int i = 0; i < amountOfNamesToGenerate; i++) {
-            if(cursorForAddedStreetnames < streetNameList.length){
-                streetNameList[cursorForAddedStreetnames] = (streetNames.get(cursorForProvidedStreetNames));
-                cursorForAddedStreetnames++;
-            } else {
-                break;
-            }
+        for (int i = 0; i < streetNameArray.length; i++) {
+                streetNameArray[i] = streetNames.get(cursorForProvidedStreetNames);
             
-            if(cursorForProvidedStreetNames == streetNames.size()){
+            if(cursorForProvidedStreetNames >= streetNames.size() - 1){
                 cursorForProvidedStreetNames = 0;
             } else {
                 cursorForProvidedStreetNames++;
@@ -170,14 +198,14 @@ public class Persongenerator {
 
         }
 
-        List<String> streetNameListAsList = Arrays.asList(streetNameList);
+        List<String> streetNameListAsList = Arrays.asList(streetNameArray);
 
         Collections.shuffle(streetNameListAsList);
 
-        streetNameListAsList.toArray(streetNameList);
+        streetNameListAsList.toArray(streetNameArray);
         
         
-        return streetNameList;
+        return streetNameArray;
     }
 
 
@@ -230,14 +258,10 @@ public class Persongenerator {
         return randomDates;
     }
 
-
-
-
-
-
     @SuppressWarnings("SqlResolve")
     public static void main(String[] args) {
         double startTime = System.currentTimeMillis();
+        double lapTime = System.currentTimeMillis();
 
 
         Persongenerator p = new Persongenerator();
@@ -247,11 +271,15 @@ public class Persongenerator {
         try {
 
             PreparedStatement ps = c.prepareStatement("SELECT rang, name FROM para_db.vornamen");
+
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 p.firstNamesReferencedByRank.put(rs.getString("name"), rs.getInt("rang"));
             }
-            System.out.println(p.firstNamesReferencedByRank);
+
+            System.out.println("Vornamen ausgelesen. Bisherige Zeit: "+ (System.currentTimeMillis()-startTime)/1000 + "s. \nVerstrichene Zeit für diese Operation: "+(System.currentTimeMillis()-lapTime)/1000 +"s.");
+            System.out.println("----------------------------------------");
+            lapTime = System.currentTimeMillis();
             ps.close();
 
             ps = c.prepareStatement("SELECT rang, name FROM para_db.nachnamen");
@@ -259,7 +287,9 @@ public class Persongenerator {
             while (rs2.next()) {
                 p.lastNamesReferencedByRank.put(rs2.getString("name"), Integer.parseInt((rs2.getString("rang")).substring(0, rs2.getString("rang").length()-1).replaceAll("\\s", "")));
             }
-            System.out.println(p.lastNamesReferencedByRank);
+            System.out.println("Nachnamen ausgelesen. Bisherige Zeit: "+ (System.currentTimeMillis()-startTime)/1000 + "s. \nVerstrichene Zeit für diese Operation: "+(System.currentTimeMillis()-lapTime)/1000 +"s.");
+            System.out.println("----------------------------------------");
+            lapTime = System.currentTimeMillis();
             ps.close();
 
             ps = c.prepareStatement("SELECT name FROM para_db.strassen_namen");
@@ -267,7 +297,9 @@ public class Persongenerator {
             while (rs3.next()) {
                 p.streetNames.add(rs3.getString("name"));
             }
-            System.out.println(p.streetNames);
+            System.out.println("Straßen ausgelesen. Bisherige Zeit: "+ (System.currentTimeMillis()-startTime)/1000 + "s. \nVerstrichene Zeit für diese Operation: "+(System.currentTimeMillis()-lapTime)/1000 +"s.");
+            System.out.println("----------------------------------------");
+            lapTime = System.currentTimeMillis();
             ps.close();
 
             ps = c.prepareStatement("SELECT para_db.plzew.plz, para_db.plzew.einwohner, para_db.plzort.ort FROM para_db.plzew " +
@@ -277,26 +309,33 @@ public class Persongenerator {
                 p.zipCodeWithNumberOfInhabitants.put(rs4.getInt("plz"), rs4.getInt("einwohner"));
                 p.zipCodeCityName.put(rs4.getInt("plz"), rs4.getString("ort"));
             }
-            System.out.println(p.zipCodeCityName);
+            System.out.println("Postleitzahlen und Städte ausgelesen. Bisherige Zeit: "+ (System.currentTimeMillis()-startTime)/1000 + "s. \nVerstrichene Zeit für diese Operation: "+(System.currentTimeMillis()-lapTime)/1000 +"s.");
+            System.out.println("----------------------------------------");
+            lapTime = System.currentTimeMillis();
             ps.close();
 
         } catch (SQLException se){
             se.printStackTrace();
         }
+        System.out.println("----------------------------------------");
+        System.out.println("Generiere Daten");
+        System.out.println("----------------------------------------");
 
-        int currentAmountOfPersonsToGenerate = 50000;
-        String[] firstnames = p.createNameList(currentAmountOfPersonsToGenerate, p.firstNamesReferencedByRank);
-        String[] lastnames = p.createNameList(currentAmountOfPersonsToGenerate, p.lastNamesReferencedByRank);
-        Integer[] zipCodeList = p.createZipCodeList(currentAmountOfPersonsToGenerate, p.zipCodeWithNumberOfInhabitants);
-        String[] streetNameList = p.createStreetNameList(currentAmountOfPersonsToGenerate, p.streetNames);
-        Date[] randomDates = p.createRandomDates(currentAmountOfPersonsToGenerate);
-        Integer[] randomHouseNumbers = p.createHouseNumberList(currentAmountOfPersonsToGenerate, 300);
+        String[] firstnames = p.createNameList(p.amountOfPersonsToGenerate, p.firstNamesReferencedByRank);
+        String[] lastnames = p.createNameList(p.amountOfPersonsToGenerate, p.lastNamesReferencedByRank);
+        Integer[] zipCodeList = p.createZipCodeList(p.amountOfPersonsToGenerate, p.zipCodeWithNumberOfInhabitants);
+        String[] streetNameList = p.createStreetNameList(p.amountOfPersonsToGenerate, p.streetNames);
+        Date[] randomDates = p.createRandomDates(p.amountOfPersonsToGenerate);
+        Integer[] randomHouseNumbers = p.createHouseNumberList(p.amountOfPersonsToGenerate, 300);
         ArrayList<String> cityNames = new ArrayList<>();
 
         for (int zipcode: zipCodeList) {
             cityNames.add(p.zipCodeCityName.get(zipcode));
-            System.out.println(zipcode);
         }
+
+        System.out.println("Daten generiert. Bisherige Zeit: "+ (System.currentTimeMillis()-startTime)/1000 + "s. \nVerstrichene Zeit für diese Operation: "+(System.currentTimeMillis()-lapTime)/1000 +"s.");
+        System.out.println("----------------------------------------");
+        lapTime = System.currentTimeMillis();
 
         try{
 
@@ -306,36 +345,27 @@ public class Persongenerator {
             for (int i = 0; i < firstnames.length; i++) {
 
                 ps.setString(1, firstnames[i]);
-                System.out.print(firstnames[i] + ", ");
 
                 ps.setString(2, lastnames[i]);
-                System.out.print(lastnames[i] + ", ");
 
                 ps.setDate(3, randomDates[i]);
-                System.out.print(randomDates[i] + ", ");
 
                 ps.setString(4, cityNames.get(i));
-                System.out.print(cityNames.get(i) + ", ");
 
                 if(i < (firstnames.length*0.95)) {
                     ps.setString(5, cityNames.get(i));
-                    System.out.print(cityNames.get(i) + ", ");
                 } else{
                     ps.setString(5, cityNames.get((int) (Math.random() * firstnames.length)));
-                    System.out.print(cityNames.get(i) + ", ");
                 }
                 ps.setString(6, "added via JDBC");
-                System.out.print("added via JDBC" + ", ");
 
                 ps.setString(7, streetNameList[i]);
-                System.out.print(streetNameList[i] + ", ");
 
                 ps.setInt(8, randomHouseNumbers[i]);
-                System.out.println(randomHouseNumbers[i]);
                 ps.addBatch();
             }
-            //int[] count = ps.executeBatch();
-            //System.out.println(count);
+            int[] count = ps.executeBatch();
+            System.out.println(count);
             //c.commit();
 
         }catch(SQLException se) {
@@ -353,7 +383,15 @@ public class Persongenerator {
         */
 
         double timeElapsed = (System.currentTimeMillis()-startTime)/1000;
-        System.out.println("Die Operation hat "+ timeElapsed+ " Sekunden gebraucht");
+        System.out.println("##############################################################################################");
+        System.out.println("##############################################################################################");
+        System.out.println("##############################################################################################");
+        System.out.println("");
+        System.out.println("Die gesamte Operation hat "+ timeElapsed+ " Sekunden gebraucht. \nVerstrichene Zeit für diese Operation: "+(System.currentTimeMillis()-lapTime)/1000 +"s.");
+        System.out.println("");
+        System.out.println("##############################################################################################");
+        System.out.println("##############################################################################################");
+        System.out.println("##############################################################################################");
     }
 
 }
