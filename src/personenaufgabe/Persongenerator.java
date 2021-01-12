@@ -76,7 +76,7 @@ public class Persongenerator {
         namesReferencedByRank.forEach((name, rank) -> {
             namesAndOccurences.put(name, (int) Math.round((namesReferencedByRank.size()-rank+1)* factorByHowMuchANameHasToBeMultiplied));
             if(rank == 1 && !name.equals("") && name != null){
-                nameNumberOne = name;
+                nameNumberOne = new String(name.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
             }
         });
 
@@ -94,7 +94,7 @@ public class Persongenerator {
             while (currentNameHasToBePutThisManyTimesInArray <= 0) {
                 do{
                     currentNameHasToBePutThisManyTimesInArray = namesAndOccurences.get(listOfNames.get(0));
-                    currentName = listOfNames.get(0);
+                    currentName = new String(listOfNames.get(0).getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
                     listOfNames.remove(0);
                 }while(currentName.equals("") || currentName == null || currentName.isEmpty());
                 if(currentName.equals("") || currentName == null|| currentName.isEmpty()){
@@ -312,7 +312,7 @@ public class Persongenerator {
             ResultSet rs4 = ps.executeQuery();
             while (rs4.next()) {
                 p.zipCodeWithNumberOfInhabitants.put(rs4.getInt("plz"), rs4.getInt("einwohner"));
-                p.zipCodeCityName.put(rs4.getInt("plz"), new String(rs4.getString("name").getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8));
+                p.zipCodeCityName.put(rs4.getInt("plz"), new String(rs4.getString("ort").getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8));
             }
             System.out.println("Postleitzahlen und Städte ausgelesen. Bisherige Zeit: "+ (System.currentTimeMillis()-startTime)/1000 + "s. \nVerstrichene Zeit für diese Operation: "+(System.currentTimeMillis()-lapTime)/1000 +"s.");
             System.out.println("----------------------------------------");
@@ -352,7 +352,7 @@ public class Persongenerator {
 
             for (int i = 0; i < firstnames.length; i++) {
                 currentBatchSize++;
-                if(i%batchSize == 0){
+                if(i%(batchSize-1) == 0 && i != 0){
                     System.out.println("Batch "+ batchCounter+ " mit "+currentBatchSize+ " Einträgen generiert. Ausführung bevorstehend. Bisherige Zeit: "+ (System.currentTimeMillis()-startTime)/1000 + "s. \nVerstrichene Zeit für diese Operation: "+(System.currentTimeMillis()-lapTime)/1000 +"s.");
                     System.out.println("----------------------------------------");
                     batchCounter++;
