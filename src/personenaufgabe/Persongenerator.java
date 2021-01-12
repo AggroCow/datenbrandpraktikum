@@ -16,6 +16,7 @@ public class Persongenerator {
 
     private ArrayList<String> streetNames = new ArrayList<>();
     private final int maximumHouseNumber = 500;
+    private String nameNumberOne = "";
 
     private Connection conn1 = null;
     private String user = "PARA_DB";
@@ -63,22 +64,19 @@ public class Persongenerator {
         int sumOfAllRanks = (namesReferencedByRank.size() * (namesReferencedByRank.size() +1))/2; //triangle number
         double factorByHowMuchANameHasToBeMultiplied = (double)amountOfNamesToGenerate / (double)sumOfAllRanks;
 
-
-        double finalFactorByHowMuchANameHasToBeMultiplied = factorByHowMuchANameHasToBeMultiplied;
-
         final int[] cursor = {0};
 
         HashMap<String, Integer> namesAndOccurences = new HashMap<>();
         List<String> listOfNames = new ArrayList<>(namesReferencedByRank.keySet());
-        AtomicReference<String> nameNumberOne = new AtomicReference<>("");
 
 
 
         namesReferencedByRank.forEach((name, rank) -> {
-            namesAndOccurences.put(name, (int) Math.round((namesReferencedByRank.size()-rank+1)* finalFactorByHowMuchANameHasToBeMultiplied));
-            if(rank == 1){
-                nameNumberOne.set(name);
+            namesAndOccurences.put(name, (int) Math.round((namesReferencedByRank.size()-rank+1)* factorByHowMuchANameHasToBeMultiplied));
+            if(rank == 1 && !name.equals("") && name != null){
+                nameNumberOne = name;
             }
+            System.out.println(name);
         });
 
         int currentNameHasToBePutThisManyTimesInArray = 0;
@@ -87,20 +85,23 @@ public class Persongenerator {
         for (int i = 0; i < nameArray.length; i++) {
             if(listOfNames.size() == 0) {
                 while(i < nameArray.length){
-                    nameArray[i] = nameNumberOne.get();
+                    nameArray[i] = nameNumberOne;
                     i++;
                 }
                 break;
             }
             while (currentNameHasToBePutThisManyTimesInArray <= 0) {
-                currentNameHasToBePutThisManyTimesInArray = namesAndOccurences.get(listOfNames.get(0));
-                currentName = listOfNames.get(0);
-                listOfNames.remove(0);
+                do{
+                    currentNameHasToBePutThisManyTimesInArray = namesAndOccurences.get(listOfNames.get(0));
+                    currentName = listOfNames.get(0);
+                    listOfNames.remove(0);
+                }while(currentName.equals("") || currentName == null || currentName.isEmpty());
+                if(currentName.equals("") || currentName == null|| currentName.isEmpty()){
+                    System.out.println("\n\n\nNULL NAME GEFUNDEN\n\n\n");
+                }
             }
-
             nameArray[i] = currentName;
             currentNameHasToBePutThisManyTimesInArray--;
-
         }
 
 
@@ -340,22 +341,35 @@ public class Persongenerator {
         System.out.println("----------------------------------------");
         lapTime = System.currentTimeMillis();
 
+        int batchCounter = 0;
         try{
 
             //SQL statement add first
             PreparedStatement ps = c.prepareStatement("INSERT INTO para_db.jdbc_personen VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 
             for (int i = 0; i < firstnames.length; i++) {
+                if(i%1000000 == 0 && i != 0){
+                    System.out.println("Batch "+ batchCounter+ " generiert. Ausführung bevorstehend. Bisherige Zeit: "+ (System.currentTimeMillis()-startTime)/1000 + "s. \nVerstrichene Zeit für diese Operation: "+(System.currentTimeMillis()-lapTime)/1000 +"s.");
+                    System.out.println("----------------------------------------");
+                    batchCounter++;
+                    ps.executeBatch();
+                    c = p.connect();
+                    ps = c.prepareStatement("INSERT INTO para_db.jdbc_personen VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                }
 
                 ps.setString(1, firstnames[i]);
 
-                ps.setString(2, lastnames[i]);
+                if(lastnames[i] == null || lastnames[i].equals("")){
+                    ps.setString(2, p.nameNumberOne);
+                }else{
+                    ps.setString(2, lastnames[i]);
+                }
 
                 ps.setDate(3, randomDates[i]);
 
                 ps.setString(4, cityNames.get(i));
 
-                if(i < (firstnames.length*0.95)) {
+                if(i < (int) (firstnames.length*0.95)) {
                     ps.setString(5, cityNames.get(i));
                 } else{
                     ps.setString(5, cityNames.get((int) (Math.random() * firstnames.length)));
@@ -367,8 +381,9 @@ public class Persongenerator {
                 ps.setInt(8, randomHouseNumbers[i]);
                 ps.addBatch();
             }
-            int[] count = ps.executeBatch();
-            System.out.println(count);
+            System.out.println("Batch "+ batchCounter+ " generiert. Ausführung bevorstehend. Bisherige Zeit: "+ (System.currentTimeMillis()-startTime)/1000 + "s. \nVerstrichene Zeit für diese Operation: "+(System.currentTimeMillis()-lapTime)/1000 +"s.");
+            System.out.println("----------------------------------------");
+            ps.executeBatch();
             //c.commit();
 
         }catch(SQLException se) {
