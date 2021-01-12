@@ -3,7 +3,6 @@ package personenaufgabe;
 import java.sql.*;
 import java.sql.Date;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class Persongenerator {
     private final int amountOfPersonsToGenerate = 5000000; //5 million
@@ -76,7 +75,6 @@ public class Persongenerator {
             if(rank == 1 && !name.equals("") && name != null){
                 nameNumberOne = name;
             }
-            System.out.println(name);
         });
 
         int currentNameHasToBePutThisManyTimesInArray = 0;
@@ -342,14 +340,15 @@ public class Persongenerator {
         lapTime = System.currentTimeMillis();
 
         int batchCounter = 0;
+        int batchSize = p.amountOfPersonsToGenerate/2;
         try{
 
             //SQL statement add first
             PreparedStatement ps = c.prepareStatement("INSERT INTO para_db.jdbc_personen VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 
             for (int i = 0; i < firstnames.length; i++) {
-                if(i%1000000 == 0 && i != 0){
-                    System.out.println("Batch "+ batchCounter+ " generiert. Ausführung bevorstehend. Bisherige Zeit: "+ (System.currentTimeMillis()-startTime)/1000 + "s. \nVerstrichene Zeit für diese Operation: "+(System.currentTimeMillis()-lapTime)/1000 +"s.");
+                if(i%batchSize == 0 && i != 0){
+                    System.out.println("Batch "+ batchCounter+ " mit "+batchSize+ " Einträgen generiert. Ausführung bevorstehend. Bisherige Zeit: "+ (System.currentTimeMillis()-startTime)/1000 + "s. \nVerstrichene Zeit für diese Operation: "+(System.currentTimeMillis()-lapTime)/1000 +"s.");
                     System.out.println("----------------------------------------");
                     batchCounter++;
                     ps.executeBatch();
