@@ -380,7 +380,7 @@ public class Persongenerator {
                 ps.setInt(8, randomHouseNumbers[i]);
                 ps.addBatch();
             }
-            System.out.println("Batch "+ batchCounter+ " generiert. Ausführung bevorstehend. Bisherige Zeit: "+ (System.currentTimeMillis()-startTime)/1000 + "s. \nVerstrichene Zeit für diese Operation: "+(System.currentTimeMillis()-lapTime)/1000 +"s.");
+            System.out.println("Batch "+ batchCounter+ " mit "+batchSize+ " Einträgen generiert. Ausführung bevorstehend. Bisherige Zeit: "+ (System.currentTimeMillis()-startTime)/1000 + "s. \nVerstrichene Zeit für diese Operation: "+(System.currentTimeMillis()-lapTime)/1000 +"s.");
             System.out.println("----------------------------------------");
             ps.executeBatch();
             //c.commit();
