@@ -1,5 +1,8 @@
 package personenaufgabe;
 
+import com.sun.deploy.util.StringUtils;
+
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.sql.Date;
 import java.util.*;
@@ -276,7 +279,7 @@ public class Persongenerator {
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                p.firstNamesReferencedByRank.put(rs.getString("name"), rs.getInt("rang"));
+                p.firstNamesReferencedByRank.put(new String(rs.getString("name").getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8), rs.getInt("rang"));
             }
 
             System.out.println("Vornamen ausgelesen. Bisherige Zeit: "+ (System.currentTimeMillis()-startTime)/1000 + "s. \nVerstrichene Zeit für diese Operation: "+(System.currentTimeMillis()-lapTime)/1000 +"s.");
@@ -287,7 +290,7 @@ public class Persongenerator {
             ps = c.prepareStatement("SELECT rang, name FROM para_db.nachnamen");
             ResultSet rs2 = ps.executeQuery();
             while (rs2.next()) {
-                p.lastNamesReferencedByRank.put(rs2.getString("name"), Integer.parseInt((rs2.getString("rang")).substring(0, rs2.getString("rang").length()-1).replaceAll("\\s", "")));
+                p.lastNamesReferencedByRank.put(new String(rs2.getString("name").getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8), Integer.parseInt((rs2.getString("rang")).substring(0, rs2.getString("rang").length()-1).replaceAll("\\s", "")));
             }
             System.out.println("Nachnamen ausgelesen. Bisherige Zeit: "+ (System.currentTimeMillis()-startTime)/1000 + "s. \nVerstrichene Zeit für diese Operation: "+(System.currentTimeMillis()-lapTime)/1000 +"s.");
             System.out.println("----------------------------------------");
@@ -297,7 +300,7 @@ public class Persongenerator {
             ps = c.prepareStatement("SELECT name FROM para_db.strassen_namen");
             ResultSet rs3 = ps.executeQuery();
             while (rs3.next()) {
-                p.streetNames.add(rs3.getString("name"));
+                p.streetNames.add(new String(rs3.getString("name").getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8));
             }
             System.out.println("Straßen ausgelesen. Bisherige Zeit: "+ (System.currentTimeMillis()-startTime)/1000 + "s. \nVerstrichene Zeit für diese Operation: "+(System.currentTimeMillis()-lapTime)/1000 +"s.");
             System.out.println("----------------------------------------");
@@ -309,7 +312,7 @@ public class Persongenerator {
             ResultSet rs4 = ps.executeQuery();
             while (rs4.next()) {
                 p.zipCodeWithNumberOfInhabitants.put(rs4.getInt("plz"), rs4.getInt("einwohner"));
-                p.zipCodeCityName.put(rs4.getInt("plz"), rs4.getString("ort"));
+                p.zipCodeCityName.put(rs4.getInt("plz"), new String(rs4.getString("name").getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8));
             }
             System.out.println("Postleitzahlen und Städte ausgelesen. Bisherige Zeit: "+ (System.currentTimeMillis()-startTime)/1000 + "s. \nVerstrichene Zeit für diese Operation: "+(System.currentTimeMillis()-lapTime)/1000 +"s.");
             System.out.println("----------------------------------------");
