@@ -340,17 +340,20 @@ public class Persongenerator {
         lapTime = System.currentTimeMillis();
 
         int batchCounter = 0;
-        int batchSize = p.amountOfPersonsToGenerate/2;
+        int batchSize = Integer.parseInt(args[0]);
+        int currentBatchSize = 0;
         try{
 
             //SQL statement add first
             PreparedStatement ps = c.prepareStatement("INSERT INTO para_db.jdbc_personen VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 
             for (int i = 0; i < firstnames.length; i++) {
+                currentBatchSize++;
                 if(i%batchSize == 0 && i != 0){
-                    System.out.println("Batch "+ batchCounter+ " mit "+batchSize+ " Einträgen generiert. Ausführung bevorstehend. Bisherige Zeit: "+ (System.currentTimeMillis()-startTime)/1000 + "s. \nVerstrichene Zeit für diese Operation: "+(System.currentTimeMillis()-lapTime)/1000 +"s.");
+                    System.out.println("Batch "+ batchCounter+ " mit "+currentBatchSize+ " Einträgen generiert. Ausführung bevorstehend. Bisherige Zeit: "+ (System.currentTimeMillis()-startTime)/1000 + "s. \nVerstrichene Zeit für diese Operation: "+(System.currentTimeMillis()-lapTime)/1000 +"s.");
                     System.out.println("----------------------------------------");
                     batchCounter++;
+                    currentBatchSize = 0;
                     ps.executeBatch();
                     c = p.connect();
                     ps = c.prepareStatement("INSERT INTO para_db.jdbc_personen VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
@@ -380,7 +383,7 @@ public class Persongenerator {
                 ps.setInt(8, randomHouseNumbers[i]);
                 ps.addBatch();
             }
-            System.out.println("Batch "+ batchCounter+ " mit "+batchSize+ " Einträgen generiert. Ausführung bevorstehend. Bisherige Zeit: "+ (System.currentTimeMillis()-startTime)/1000 + "s. \nVerstrichene Zeit für diese Operation: "+(System.currentTimeMillis()-lapTime)/1000 +"s.");
+            System.out.println("Batch "+ batchCounter+ " mit "+currentBatchSize+ " Einträgen generiert. Ausführung bevorstehend. Bisherige Zeit: "+ (System.currentTimeMillis()-startTime)/1000 + "s. \nVerstrichene Zeit für diese Operation: "+(System.currentTimeMillis()-lapTime)/1000 +"s.");
             System.out.println("----------------------------------------");
             ps.executeBatch();
             //c.commit();
