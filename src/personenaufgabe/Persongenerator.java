@@ -349,13 +349,13 @@ public class Persongenerator {
 
             for (int i = 0; i < firstnames.length; i++) {
                 currentBatchSize++;
-                if(i%batchSize == 0 && i != 0){
+                if(i%batchSize == 0){
                     System.out.println("Batch "+ batchCounter+ " mit "+currentBatchSize+ " Einträgen generiert. Ausführung bevorstehend. Bisherige Zeit: "+ (System.currentTimeMillis()-startTime)/1000 + "s. \nVerstrichene Zeit für diese Operation: "+(System.currentTimeMillis()-lapTime)/1000 +"s.");
                     System.out.println("----------------------------------------");
                     batchCounter++;
                     currentBatchSize = 0;
                     ps.executeBatch();
-                    c = p.connect();
+                    //c = p.connect();
                     ps = c.prepareStatement("INSERT INTO para_db.jdbc_personen VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
                 }
 
