@@ -22,9 +22,9 @@ public class Persongenerator {
 
     private Connection conn1 = null;
     private String user = "PARA_DB";
-    private String password = "para_db";
+    private String password = "PARA_DB";
 
-    String dbURL = "jdbc:oracle:thin:@134.106.56.42:1521:dbprak";
+    String dbURL = "jdbc:oracle:thin:@134.106.56.50:1521:dbprak2";
 
     /**
      * Connects do database via jdbc
