@@ -9,5 +9,13 @@
       <jdbc-url>jdbc:oracle:thin:@134.106.56.42:1521:dbprak</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="Neu - Datenbrandpraktikum" uuid="7f903706-b862-47ce-b0e2-8f21a3ebab30">
+      <driver-ref>oracle.19</driver-ref>
+      <synchronize>true</synchronize>
+      <auto-commit>false</auto-commit>
+      <jdbc-driver>oracle.jdbc.OracleDriver</jdbc-driver>
+      <jdbc-url>jdbc:oracle:thin:@134.106.56.50:1521:dbprak2</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>
